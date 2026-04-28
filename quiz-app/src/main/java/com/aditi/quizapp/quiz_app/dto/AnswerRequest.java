@@ -2,22 +2,25 @@ package com.aditi.quizapp.quiz_app.dto;
 
 public class AnswerRequest {
 
-    private Integer questionId;
-    private String answer;
+    private int questionId;
+    private String selectedAnswer;
 
-    public Integer getQuestionId() {
+    public AnswerRequest() {
+    }
+
+    public int getQuestionId() {
         return questionId;
     }
 
-    public void setQuestionId(Integer questionId) {
+    public void setQuestionId(int questionId) {
         this.questionId = questionId;
     }
 
-    public String getAnswer() {
-        return answer;
+    public String getSelectedAnswer() {
+        return selectedAnswer;
     }
 
-    public void setAnswer(String answer) {
-        this.answer = answer;
+    public void setSelectedAnswer(String selectedAnswer) {
+        this.selectedAnswer = selectedAnswer;
     }
 }

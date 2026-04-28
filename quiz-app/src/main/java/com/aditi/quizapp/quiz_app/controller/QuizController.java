@@ -1,123 +1,128 @@
 package com.aditi.quizapp.quiz_app.controller;
 
-import com.aditi.quizapp.quiz_app.dto.AnswerRequest;
-import com.aditi.quizapp.quiz_app.dto.QuestionResponse;
 import com.aditi.quizapp.quiz_app.model.Question;
-import com.aditi.quizapp.quiz_app.model.QuizResult;
+import com.aditi.quizapp.quiz_app.model.Score;
+
 import com.aditi.quizapp.quiz_app.repository.QuestionRepository;
-import com.aditi.quizapp.quiz_app.repository.QuizResultRepository;
+import com.aditi.quizapp.quiz_app.repository.ScoreRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @RestController
+
 @RequestMapping("/quiz")
+
+@CrossOrigin(origins = "http://localhost:3000")
+
 public class QuizController {
 
-    private final QuestionRepository questionRepository;
-    private final QuizResultRepository quizResultRepository;
+    @Autowired
+    private QuestionRepository questionRepository;
 
-    public QuizController(QuestionRepository questionRepository,
-                          QuizResultRepository quizResultRepository) {
+    @Autowired
+    private ScoreRepository scoreRepository;
 
-        this.questionRepository = questionRepository;
-        this.quizResultRepository = quizResultRepository;
-    }
-
-    // GET ALL QUESTIONS (without correct answers)
     @GetMapping("/questions")
-    public List<QuestionResponse> getAllQuestions() {
 
-        return questionRepository.findAll()
-                .stream()
-                .map(q -> new QuestionResponse(
-                        q.getId(),
-                        q.getQuestion(),
-                        q.getOptionA(),
-                        q.getOptionB(),
-                        q.getOptionC(),
-                        q.getOptionD(),
-                        q.getCategory(),
-                        q.getDifficulty(),
-                        q.getTimeLimit()
-                ))
-                .toList();
-    }
+    public List<Question> getQuestions() {
 
-    // FILTER BY DIFFICULTY
-    @GetMapping("/questions/difficulty/{difficulty}")
-    public List<Question> getByDifficulty(@PathVariable String difficulty) {
-
-        return questionRepository.findByDifficulty(difficulty);
-    }
-
-    // FILTER BY CATEGORY
-    @GetMapping("/questions/category/{category}")
-    public List<Question> getByCategory(@PathVariable String category) {
-
-        return questionRepository.findByCategory(category);
-    }
-
-    // RANDOM QUESTIONS
-    @GetMapping("/random/{count}")
-    public List<QuestionResponse> getRandomQuestions(@PathVariable int count) {
-
-        List<Question> questions = questionRepository.findAll();
+        List<Question> questions =
+                questionRepository.findAll();
 
         Collections.shuffle(questions);
 
-        return questions.stream()
-                .limit(count)
-                .map(q -> new QuestionResponse(
-                        q.getId(),
-                        q.getQuestion(),
-                        q.getOptionA(),
-                        q.getOptionB(),
-                        q.getOptionC(),
-                        q.getOptionD(),
-                        q.getCategory(),
-                        q.getDifficulty(),
-                        q.getTimeLimit()
-                ))
-                .toList();
+        return questions;
     }
 
-    // SUBMIT QUIZ
     @PostMapping("/submit")
-public QuizResult submitQuiz(@RequestBody List<AnswerRequest> answers,
-                             @RequestParam String username) {
 
-    int score = 0;
+    public Map<String, Object> submitQuiz(
 
-    for (AnswerRequest answer : answers) {
+            @RequestBody Map<String, Object> payload
+    ) {
 
-        Question question = questionRepository
-                .findById(answer.getQuestionId())
-                .orElse(null);
+        Map<String, String> answers =
 
-        if (question != null &&
-                question.getCorrectAnswer()
-                        .equalsIgnoreCase(answer.getAnswer())) {
+                (Map<String, String>)
+                        payload.get("answers");
 
-            score++;
+        int score = 0;
+
+        List<Question> questions =
+                questionRepository.findAll();
+
+        for (Question q : questions) {
+
+            String userAnswer =
+
+                    answers.get(
+                            String.valueOf(q.getId())
+                    );
+
+            if (
+
+                    userAnswer != null
+
+                            &&
+
+                            userAnswer.equals(
+                                    q.getCorrectAnswer()
+                            )
+
+            ) {
+
+                score++;
+
+            }
+
         }
+
+        Score newScore = new Score();
+
+        newScore.setUsername(
+                (String) payload.get("username")
+        );
+
+        newScore.setScore(score);
+
+        newScore.setTotalQuestions(
+                questions.size()
+        );
+
+        scoreRepository.save(newScore);
+
+        Map<String, Object> result =
+                new HashMap<>();
+
+        result.put(
+                "username",
+                payload.get("username")
+        );
+
+        result.put(
+                "score",
+                score
+        );
+
+        result.put(
+                "totalQuestions",
+                questions.size()
+        );
+
+        return result;
     }
 
-    QuizResult result = new QuizResult();
+    @GetMapping("/leaderboard")
 
-    result.setUsername(username);
-    result.setScore(score);
-    result.setTotalQuestions(answers.size());
+    public List<Score> leaderboard() {
 
-    return quizResultRepository.save(result);
-}
+        return scoreRepository
+                .findTop10ByOrderByScoreDesc();
 
-    // VIEW RESULTS
-    @GetMapping("/results")
-    public List<QuizResult> getResults() {
-
-        return quizResultRepository.findAll();
     }
+
 }

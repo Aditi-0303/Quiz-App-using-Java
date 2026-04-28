@@ -1,9 +1,6 @@
 package com.aditi.quizapp.quiz_app.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Question {
@@ -11,43 +8,28 @@ public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    private Integer id;
+    private int id;
 
     private String question;
+
     private String optionA;
     private String optionB;
     private String optionC;
     private String optionD;
+
     private String correctAnswer;
+
     private String category;
+
     private String difficulty;
 
-    private Integer timeLimit;
+    private int timeLimit;
 
-    public Question() {
-    }
-
-    public Question(Integer id, String question, String optionA, String optionB,
-                    String optionC, String optionD, String correctAnswer,
-                    String category, String difficulty, Integer timeLimit) {
-
-        this.id = id;
-        this.question = question;
-        this.optionA = optionA;
-        this.optionB = optionB;
-        this.optionC = optionC;
-        this.optionD = optionD;
-        this.correctAnswer = correctAnswer;
-        this.category = category;
-        this.difficulty = difficulty;
-        this.timeLimit = timeLimit;
-    }
-
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -115,11 +97,11 @@ public class Question {
         this.difficulty = difficulty;
     }
 
-    public Integer getTimeLimit() {
+    public int getTimeLimit() {
         return timeLimit;
     }
 
-    public void setTimeLimit(Integer timeLimit) {
+    public void setTimeLimit(int timeLimit) {
         this.timeLimit = timeLimit;
     }
 }
